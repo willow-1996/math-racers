@@ -28,10 +28,10 @@ export class TitleScene extends Phaser.Scene {
     const subtitleY = racersY + logoFont * 0.75;
 
     // Shadows
-    this.add.text(cx + 3, mathY + 3,   'MATH',   { fontSize: `${logoFont}px`, fontStyle: 'bold', color: '#00000055', fontFamily: 'Arial Black, Arial' }).setOrigin(0.5);
+    this.add.text(cx + 3, mathY + 3,   'MATHS',  { fontSize: `${logoFont}px`, fontStyle: 'bold', color: '#00000055', fontFamily: 'Arial Black, Arial' }).setOrigin(0.5);
     this.add.text(cx + 3, racersY + 3, 'RACERS', { fontSize: `${logoFont}px`, fontStyle: 'bold', color: '#00000055', fontFamily: 'Arial Black, Arial' }).setOrigin(0.5);
 
-    const mathText = this.add.text(cx, mathY, 'MATH', {
+    const mathText = this.add.text(cx, mathY, 'MATHS', {
       fontSize: `${logoFont}px`, fontStyle: 'bold', color: '#ffffff',
       fontFamily: 'Arial Black, Arial', stroke: '#003399', strokeThickness: 7,
     }).setOrigin(0.5);
@@ -41,7 +41,7 @@ export class TitleScene extends Phaser.Scene {
       fontFamily: 'Arial Black, Arial', stroke: '#aa6600', strokeThickness: 7,
     }).setOrigin(0.5);
 
-    this.add.text(cx, subtitleY, 'Solve math · Race to win!', {
+    this.add.text(cx, subtitleY, 'Solve maths · Race to win!', {
       fontSize: `${Math.min(18, w * 0.025)}px`, color: '#ffffff', fontFamily: 'Arial', alpha: 0.85,
     }).setOrigin(0.5);
 
@@ -119,7 +119,7 @@ export class TitleScene extends Phaser.Scene {
 
     // ── Bucks display — top-centre, away from buttons ─────────────────────
     const progress = this.registry.get('progress');
-    this._bucksText = this.add.text(cx, SAFE_PADDING + 4, `💵 ${progress ? progress.bucks : 0}`, {
+    this._bucksText = this.add.text(cx, SAFE_PADDING + 4, `💷 ${progress ? progress.bucks : 0}`, {
       fontSize: `${Math.min(14, w * 0.018)}px`,
       color: '#ffdd00',
       fontFamily: 'Arial',
@@ -128,7 +128,7 @@ export class TitleScene extends Phaser.Scene {
     // Listen for async IDB recovery — update wallet text if data arrives late
     this.game.events.once('progressRestored', (data) => {
       if (this._bucksText && this._bucksText.active) {
-        this._bucksText.setText(`💵 ${data.player.bucks} Bucks`);
+        this._bucksText.setText(`💷 ${data.player.bucks} Bucks`);
       }
     });
 

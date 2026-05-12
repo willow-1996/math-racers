@@ -42,7 +42,7 @@ export class TrackSelectScene extends Phaser.Scene {
     }).setOrigin(0.5, 0);
 
     // ── Bucks display ─────────────────────────────────────────────────────
-    this.add.text(w - SAFE_PADDING, SAFE_PADDING + 10, `💵 ${this.progress ? this.progress.bucks : 0}`, {
+    this.add.text(w - SAFE_PADDING, SAFE_PADDING + 10, `💷 ${this.progress ? this.progress.bucks : 0}`, {
       fontSize: `${Math.min(18, w * 0.022)}px`,
       color: '#ffdd00',
       fontFamily: 'Arial',

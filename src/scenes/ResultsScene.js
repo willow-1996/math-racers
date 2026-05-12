@@ -125,13 +125,13 @@ export class ResultsScene extends Phaser.Scene {
 
     // ── Bucks breakdown ───────────────────────────────────────────────────
     const bucksStyle = { fontSize: `${Math.min(18, w * 0.023)}px`, color: '#aaccff', fontFamily: 'Arial' };
-    const breakdownLines = [`Race finish: 💵 ${positionPayout}`];
-    if (accuracyBonus > 0) breakdownLines.push(`Perfect accuracy: 💵 +${accuracyBonus}`);
-    if (streakBonus > 0)   breakdownLines.push(`Streak bonus: 💵 +${streakBonus}`);
+    const breakdownLines = [`Race finish: 💷 ${positionPayout}`];
+    if (accuracyBonus > 0) breakdownLines.push(`Perfect accuracy: 💷 +${accuracyBonus}`);
+    if (streakBonus > 0)   breakdownLines.push(`Streak bonus: 💷 +${streakBonus}`);
     // Win streak bonus line: shows new streak length after this race
     const newWinStreak = position === 1 ? prevWinStreak + 1 : 0;
     if (winStreakBonus > 0) {
-      breakdownLines.push(`🔥 Win streak ×${newWinStreak}: 💵 +${winStreakBonus}`);
+      breakdownLines.push(`🔥 Win streak ×${newWinStreak}: 💷 +${winStreakBonus}`);
     }
 
     for (const line of breakdownLines) {
@@ -141,7 +141,7 @@ export class ResultsScene extends Phaser.Scene {
 
     y += h * 0.02;
 
-    this.add.text(cx, y, `Total: 💵 ${bucksEarned}`, {
+    this.add.text(cx, y, `Total: 💷 ${bucksEarned}`, {
       fontSize: `${Math.min(28, w * 0.036)}px`,
       fontStyle: 'bold',
       color: '#ffdd00',
@@ -153,7 +153,7 @@ export class ResultsScene extends Phaser.Scene {
     y += h * 0.055;
 
     const totalBucks = progress ? progress.bucks : bucksEarned;
-    this.add.text(cx, y, `Wallet: 💵 ${totalBucks}`, {
+    this.add.text(cx, y, `Wallet: 💷 ${totalBucks}`, {
       fontSize: `${Math.min(16, w * 0.02)}px`,
       color: '#88aa88',
       fontFamily: 'Arial',

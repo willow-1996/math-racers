@@ -51,7 +51,7 @@ export class GarageScene extends Phaser.Scene {
     this._bucksText = this.add.text(
       this.w - SAFE_PADDING,
       SAFE_PADDING,
-      `💵 ${this._getBucks()}`,
+      `💷 ${this._getBucks()}`,
       { fontSize: '18px', color: '#ffdd00', fontFamily: 'Arial' }
     ).setOrigin(1, 0).setDepth(50);
 
@@ -172,7 +172,7 @@ export class GarageScene extends Phaser.Scene {
         .setInteractive({ useHandCursor: true })
         .setDepth(6)
     );
-    this._track(this.add.text(btnX, btnY, '🎨 CUSTOMIZE', {
+    this._track(this.add.text(btnX, btnY, '🎨 CUSTOMISE', {
       fontSize: '22px',
       fontStyle: 'bold',
       color: '#ffffff',
@@ -296,7 +296,7 @@ export class GarageScene extends Phaser.Scene {
     const tabW = 130, tabH = 44, gap = 12;
 
     const tabs = [
-      { id: 'color',       label: '🎨 COLOR' },
+      { id: 'color',       label: '🎨 COLOUR' },
       { id: 'accessories', label: '⭐ GEAR'  },
     ];
 
@@ -388,7 +388,7 @@ export class GarageScene extends Phaser.Scene {
         this._track(this.add.text(cx, cy - 4, '🔒', {
           fontSize: '16px', fontFamily: 'Arial',
         }).setOrigin(0.5).setDepth(7));
-        this._track(this.add.text(cx, cy + 14, `💵${(colorCost / 1000).toFixed(0)}k`, {
+        this._track(this.add.text(cx, cy + 14, `💷${(colorCost / 1000).toFixed(0)}k`, {
           fontSize: '10px', color: '#ffdd00', fontFamily: 'Arial',
         }).setOrigin(0.5).setDepth(7));
       }
@@ -405,7 +405,7 @@ export class GarageScene extends Phaser.Scene {
 
     // Hint text
     const hintY = panelY + 2 * (diam + gap) + diam / 2 + 14;
-    this._track(this.add.text(w / 2, hintY, `Color: 💵 ${colorCost.toLocaleString()} each`, {
+    this._track(this.add.text(w / 2, hintY, `Colour: 💷 ${colorCost.toLocaleString()} each`, {
       fontSize: '13px', color: '#778899', fontFamily: 'Arial',
     }).setOrigin(0.5).setDepth(5));
   }
@@ -415,7 +415,7 @@ export class GarageScene extends Phaser.Scene {
 
     if (!canAfford) {
       const needed = colorCost - (this.progress?.bucks ?? 0);
-      this._showToast(`Need 💵${needed.toLocaleString()} more!`, '#ff6644');
+      this._showToast(`Need 💷${needed.toLocaleString()} more!`, '#ff6644');
       return;
     }
 
@@ -426,13 +426,13 @@ export class GarageScene extends Phaser.Scene {
     if (success) {
       this._previewColor = color;
       this._updateBucksDisplay(true); // bounce
-      this._showToast(`New color! 💵-${colorCost.toLocaleString()}`, '#44ff88');
+      this._showToast(`New colour! 💷-${colorCost.toLocaleString()}`, '#44ff88');
       // Rebuild to refresh borders / checkmarks + car preview
       this._clearObjects();
       if (this._carContainer) { this._carContainer.destroy(); this._carContainer = null; }
       this._showCustomize();
     } else {
-      this._showToast('Not enough bucks! 💵', '#ff4444');
+      this._showToast('Not enough bucks! 💷', '#ff4444');
     }
   }
 
@@ -507,10 +507,10 @@ export class GarageScene extends Phaser.Scene {
         statusStr  = '○ Tap to equip';
         statusColor = '#aaaaaa';
       } else if (canAfford) {
-        statusStr  = `💵 ${att.cost.toLocaleString()}`;
+        statusStr  = `💷 ${att.cost.toLocaleString()}`;
         statusColor = '#ffdd00';
       } else {
-        statusStr  = `🔒 💵${att.cost.toLocaleString()}`;
+        statusStr  = `🔒 💷${att.cost.toLocaleString()}`;
         statusColor = '#665544';
       }
 
@@ -570,7 +570,7 @@ export class GarageScene extends Phaser.Scene {
     if (!isOwned) {
       if (!canAfford) {
         const needed = att.cost - (this.progress.bucks ?? 0);
-        this._showToast(`Need 💵${needed.toLocaleString()} more!`, '#ff6644');
+        this._showToast(`Need 💷${needed.toLocaleString()} more!`, '#ff6644');
         return;
       }
       const success = this.progress.purchaseAttachment(classId, att.id);
@@ -580,7 +580,7 @@ export class GarageScene extends Phaser.Scene {
         this._updateBucksDisplay(true);
         this._showToast(`Got ${att.emoji} ${att.name}!`, '#44ff88');
       } else {
-        this._showToast('Not enough bucks! 💵', '#ff4444');
+        this._showToast('Not enough bucks! 💷', '#ff4444');
         return;
       }
     } else {
@@ -665,7 +665,7 @@ export class GarageScene extends Phaser.Scene {
 
   _updateBucksDisplay(bounce = false) {
     if (!this._bucksText || !this._bucksText.active) return;
-    this._bucksText.setText(`💵 ${this._getBucks().toLocaleString()}`);
+    this._bucksText.setText(`💷 ${this._getBucks().toLocaleString()}`);
     if (bounce) {
       this.tweens.add({
         targets: this._bucksText,

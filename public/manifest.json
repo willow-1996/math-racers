@@ -1,7 +1,7 @@
 {
-  "name": "Math Racers",
-  "short_name": "Math Racers",
-  "description": "Race cars by solving math problems. Earn bucks, unlock classes, beat the AI!",
+  "name": "Maths Racers",
+  "short_name": "Maths Racers",
+  "description": "Race cars by solving maths problems. Earn bucks, unlock classes, beat the AI!",
   "start_url": "/math-racers/",
   "scope": "/math-racers/",
   "display": "fullscreen",

@@ -94,7 +94,7 @@ export class CheatScene extends Phaser.Scene {
         this.progress._save();
         this._refreshBucks();
         this._showToast(
-          op.delta > 0 ? `+💵 ${op.delta.toLocaleString()}` : `-💵 ${Math.abs(op.delta).toLocaleString()}`,
+          op.delta > 0 ? `+💷 ${op.delta.toLocaleString()}` : `-💷 ${Math.abs(op.delta).toLocaleString()}`,
           op.delta > 0 ? '#44ff88' : '#ff8844'
         );
       });
@@ -115,7 +115,7 @@ export class CheatScene extends Phaser.Scene {
   }
 
   _refreshBucks() {
-    this._bucksText.setText(`💵 ${(this.progress?.bucks ?? 0).toLocaleString()} bucks`);
+    this._bucksText.setText(`💷 ${(this.progress?.bucks ?? 0).toLocaleString()} bucks`);
   }
 
   _onResetTap() {

@@ -33,7 +33,7 @@ export class ClassSelectScene extends Phaser.Scene {
     }).setOrigin(0.5, 0);
 
     // ── Bucks display ─────────────────────────────────────────────────────
-    this._bucksText = this.add.text(w - SAFE_PADDING, SAFE_PADDING + 20, `💵 ${this.progress ? this.progress.bucks : 0}`, {
+    this._bucksText = this.add.text(w - SAFE_PADDING, SAFE_PADDING + 20, `💷 ${this.progress ? this.progress.bucks : 0}`, {
       fontSize: `${Math.min(20, w * 0.025)}px`,
       color: '#ffdd00',
       fontFamily: 'Arial',
@@ -146,7 +146,7 @@ export class ClassSelectScene extends Phaser.Scene {
 
     if (!unlocked) {
       // Lock + price
-      this.add.text(cx - cardW * 0.1, cy + cardH * 0.26, `🔒 💵 ${cls.unlockCost.toLocaleString()}`, {
+      this.add.text(cx - cardW * 0.1, cy + cardH * 0.26, `🔒 💷 ${cls.unlockCost.toLocaleString()}`, {
         fontSize: `${subSize}px`,
         color: '#ffdd44',
         fontFamily: 'Arial',
@@ -183,7 +183,7 @@ export class ClassSelectScene extends Phaser.Scene {
     btn.on('pointerup', () => {
       const ok = this.progress.purchaseClass(classId);
       if (ok) {
-        this._bucksText.setText(`💵 ${this.progress.bucks}`);
+        this._bucksText.setText(`💷 ${this.progress.bucks}`);
         // Rebuild cards
         this.scene.restart();
       }
