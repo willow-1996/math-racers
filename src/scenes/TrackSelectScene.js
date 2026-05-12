@@ -25,34 +25,30 @@ export class TrackSelectScene extends Phaser.Scene {
 
     this._drawBackground();
 
-    // ── Header ─────────────────────────────────────────────────────────────
-    this.add.text(w / 2, SAFE_PADDING + 10, `${this.cls.emoji}  ${this.cls.name}`, {
-      fontSize: `${Math.min(30, w * 0.042)}px`,
+    // ── Header — single compact line to preserve vertical space ───────────
+    const headerFont = Math.min(26, w * 0.038, h * 0.08);
+    this.add.text(w / 2, SAFE_PADDING + headerFont * 0.6,
+      `${this.cls.emoji}  ${this.cls.name}  ·  Select Track`, {
+      fontSize: `${headerFont}px`,
       fontStyle: 'bold',
       color: `#${this.cls.color.toString(16).padStart(6, '0')}`,
       fontFamily: 'Arial Black, Arial',
       stroke: '#000000',
-      strokeThickness: 4,
-    }).setOrigin(0.5, 0);
-
-    this.add.text(w / 2, SAFE_PADDING + 48, 'SELECT TRACK', {
-      fontSize: `${Math.min(18, w * 0.024)}px`,
-      color: '#aaaacc',
-      fontFamily: 'Arial',
-    }).setOrigin(0.5, 0);
+      strokeThickness: 3,
+    }).setOrigin(0.5, 0.5);
 
     // ── Bucks display ─────────────────────────────────────────────────────
-    this.add.text(w - SAFE_PADDING, SAFE_PADDING + 10, `💷 ${this.progress ? this.progress.bucks : 0}`, {
-      fontSize: `${Math.min(18, w * 0.022)}px`,
+    this.add.text(w - SAFE_PADDING, SAFE_PADDING + 6, `💷 ${this.progress ? this.progress.bucks : 0}`, {
+      fontSize: `${Math.min(16, w * 0.02)}px`,
       color: '#ffdd00',
       fontFamily: 'Arial',
     }).setOrigin(1, 0);
 
     // ── Track cards ────────────────────────────────────────────────────────
-    this._buildTrackCards();
+    this._buildTrackCards(SAFE_PADDING + headerFont * 1.2 + 6);
 
     // ── Back button ───────────────────────────────────────────────────────
-    const btnH = Math.max(48, h * 0.07);
+    const btnH = Math.max(36, Math.min(48, h * 0.11));
     this._makeButton(
       SAFE_PADDING + 60, h - SAFE_PADDING - btnH / 2,
       '← Back', 0x555577,
@@ -60,18 +56,17 @@ export class TrackSelectScene extends Phaser.Scene {
     );
   }
 
-  _buildTrackCards() {
+  _buildTrackCards(startY) {
     const { w, h } = this;
     const trackIds = this.cls.tracks;
-    const count = trackIds.length; // 5
+    const count = trackIds.length;
 
     const cardW = Math.min(w - SAFE_PADDING * 2, 700);
-    const btnH = Math.max(48, h * 0.07);
-    const startY = Math.max(80, h * 0.17);
-    const bottomReserve = SAFE_PADDING + btnH + 8;
+    const backBtnH = Math.max(36, Math.min(48, h * 0.11));
+    const bottomReserve = SAFE_PADDING + backBtnH + 4;
     const availH = h - startY - bottomReserve;
-    const gap = 8;
-    const cardH = Math.max(48, Math.min(72, (availH - gap * (count - 1)) / count));
+    const gap = Math.max(4, Math.min(8, (availH * 0.02)));
+    const cardH = Math.max(36, Math.min(70, (availH - gap * (count - 1)) / count));
     const startX = w / 2 - cardW / 2;
 
     for (let i = 0; i < count; i++) {
@@ -176,7 +171,7 @@ export class TrackSelectScene extends Phaser.Scene {
 
   _makeButton(x, y, label, color, callback) {
     const btnW = Math.max(120, label.length * 12);
-    const btnH = Math.max(48, this.h * 0.07);
+    const btnH = Math.max(36, Math.min(48, this.h * 0.11));
 
     const bg = this.add.rectangle(x, y, btnW, btnH, color)
       .setStrokeStyle(2, 0xaaaacc)
