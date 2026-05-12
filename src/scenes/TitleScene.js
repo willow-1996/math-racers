@@ -18,90 +18,75 @@ export class TitleScene extends Phaser.Scene {
     // ── Background gradient (sky + road) ──────────────────────────────────
     this._drawBackground(w, h);
 
+    // ── Logo — font capped by both width and height to avoid overflow ─────
+    const logoFont = Math.min(64, w * 0.1, h * 0.15);
+    const logoLineH = logoFont * 1.05;
+
+    // Logo stacked from top, clear of safe padding
+    const mathY    = SAFE_PADDING + logoFont * 0.8;
+    const racersY  = mathY + logoLineH;
+    const subtitleY = racersY + logoFont * 0.75;
+
+    // Shadows
+    this.add.text(cx + 3, mathY + 3,   'MATH',   { fontSize: `${logoFont}px`, fontStyle: 'bold', color: '#00000055', fontFamily: 'Arial Black, Arial' }).setOrigin(0.5);
+    this.add.text(cx + 3, racersY + 3, 'RACERS', { fontSize: `${logoFont}px`, fontStyle: 'bold', color: '#00000055', fontFamily: 'Arial Black, Arial' }).setOrigin(0.5);
+
+    const mathText = this.add.text(cx, mathY, 'MATH', {
+      fontSize: `${logoFont}px`, fontStyle: 'bold', color: '#ffffff',
+      fontFamily: 'Arial Black, Arial', stroke: '#003399', strokeThickness: 7,
+    }).setOrigin(0.5);
+
+    const racersText = this.add.text(cx, racersY, 'RACERS', {
+      fontSize: `${logoFont}px`, fontStyle: 'bold', color: '#ffdd00',
+      fontFamily: 'Arial Black, Arial', stroke: '#aa6600', strokeThickness: 7,
+    }).setOrigin(0.5);
+
+    this.add.text(cx, subtitleY, 'Solve math · Race to win!', {
+      fontSize: `${Math.min(18, w * 0.025)}px`, color: '#ffffff', fontFamily: 'Arial', alpha: 0.85,
+    }).setOrigin(0.5);
+
+    this.tweens.add({ targets: [mathText, racersText], scaleX: 1.04, scaleY: 1.04, yoyo: true, repeat: -1, duration: 900, ease: 'Sine.easeInOut' });
+
+    // ── Buttons — anchored from the bottom of the safe area ───────────────
+    // Sizing is proportional but capped so they don't balloon on tall screens.
+    const raceBtnH   = Math.max(48, Math.min(62, h * 0.16));
+    const garageBtnH = Math.max(38, Math.min(50, h * 0.12));
+    const btnGap     = Math.max(6, h * 0.025);
+    const raceBtnW   = Math.min(280, w * 0.38);
+    const garageBtnW = Math.min(200, w * 0.28);
+
+    // Place GARAGE flush against bottom safe edge, RACE! above it.
+    const garageBtnY = h - SAFE_PADDING - garageBtnH / 2;
+    const btnY       = garageBtnY - garageBtnH / 2 - btnGap - raceBtnH / 2;
+
+    // ── Decorative cars — only if there's room above the RACE! button ─────
+    const carSlot = btnY - raceBtnH / 2 - 8;
+    if (carSlot > subtitleY + 24) {
+      this._drawDecoCar(cx - w * 0.2, carSlot - 15, 0x00aaff);
+      this._drawDecoCar(cx + w * 0.1, carSlot - 15, 0xff4444);
+    }
+
     // ── Animated road lines ───────────────────────────────────────────────
     this._roadLines = [];
     for (let i = 0; i < 8; i++) {
       const line = this.add.rectangle(
-        i * (w / 7) - 10, h * 0.75 + 14,
+        i * (w / 7) - 10, h * 0.85,
         70, 8, 0xffffff, 0.8
       );
       this._roadLines.push(line);
     }
 
-    // ── Logo ──────────────────────────────────────────────────────────────
-    // Shadow
-    this.add.text(cx + 4, cy - h * 0.2 + 4, 'MATH', {
-      fontSize: `${Math.min(80, w * 0.1)}px`,
-      fontStyle: 'bold',
-      color: '#00000055',
-      fontFamily: 'Arial Black, Arial',
-    }).setOrigin(0.5);
-    this.add.text(cx + 4, cy - h * 0.04 + 4, 'RACERS', {
-      fontSize: `${Math.min(80, w * 0.1)}px`,
-      fontStyle: 'bold',
-      color: '#00000055',
-      fontFamily: 'Arial Black, Arial',
-    }).setOrigin(0.5);
-
-    // Main text
-    const mathText = this.add.text(cx, cy - h * 0.2, 'MATH', {
-      fontSize: `${Math.min(80, w * 0.1)}px`,
-      fontStyle: 'bold',
-      color: '#ffffff',
-      fontFamily: 'Arial Black, Arial',
-      stroke: '#003399',
-      strokeThickness: 8,
-    }).setOrigin(0.5);
-
-    const racersText = this.add.text(cx, cy - h * 0.04, 'RACERS', {
-      fontSize: `${Math.min(80, w * 0.1)}px`,
-      fontStyle: 'bold',
-      color: '#ffdd00',
-      fontFamily: 'Arial Black, Arial',
-      stroke: '#aa6600',
-      strokeThickness: 8,
-    }).setOrigin(0.5);
-
-    // Subtitle
-    this.add.text(cx, cy + h * 0.1, 'Solve math · Race to win!', {
-      fontSize: `${Math.min(22, w * 0.028)}px`,
-      color: '#ffffff',
-      fontFamily: 'Arial',
-      alpha: 0.85,
-    }).setOrigin(0.5);
-
-    // Pulse animation on logo
-    this.tweens.add({
-      targets: [mathText, racersText],
-      scaleX: 1.04,
-      scaleY: 1.04,
-      yoyo: true,
-      repeat: -1,
-      duration: 900,
-      ease: 'Sine.easeInOut',
-    });
-
-    // ── Decorative cars ───────────────────────────────────────────────────
-    this._drawDecoCar(cx - w * 0.2, cy + h * 0.12, 0x00aaff);
-    this._drawDecoCar(cx + w * 0.1, cy + h * 0.12, 0xff4444);
-
     // ── RACE! button ──────────────────────────────────────────────────────
-    const raceBtnH = Math.max(56, h * 0.15);
-    const raceBtnW = Math.min(280, w * 0.38);
-    const raceFontSize = Math.min(34, raceBtnH * 0.55);
-    const btnY = cy + h * 0.26;
+    const raceFontSize = Math.min(30, raceBtnH * 0.52);
     const btnBg = this.add.rectangle(cx, btnY, raceBtnW, raceBtnH, 0xff4400)
       .setInteractive({ useHandCursor: true })
       .setStrokeStyle(4, 0xffffff);
 
     const btnText = this.add.text(cx, btnY, '🏁  RACE!', {
-      fontSize: `${raceFontSize}px`,
-      fontStyle: 'bold',
-      color: '#ffffff',
+      fontSize: `${raceFontSize}px`, fontStyle: 'bold', color: '#ffffff',
       fontFamily: 'Arial Black, Arial',
     }).setOrigin(0.5);
 
-    // Button hover / press effects
     btnBg.on('pointerover', () => {
       btnBg.setFillStyle(0xff6622);
       this.tweens.add({ targets: [btnBg, btnText], scaleX: 1.07, scaleY: 1.07, duration: 100 });
@@ -120,10 +105,7 @@ export class TitleScene extends Phaser.Scene {
     });
 
     // ── GARAGE button ─────────────────────────────────────────────────────
-    const garageBtnH = Math.max(44, h * 0.12);
-    const garageBtnW = Math.min(200, w * 0.28);
-    const garageFontSize = Math.min(22, garageBtnH * 0.48);
-    const garageBtnY = btnY + raceBtnH / 2 + garageBtnH / 2 + Math.max(8, h * 0.03);
+    const garageFontSize = Math.min(20, garageBtnH * 0.46);
     const garageBg = this.add.rectangle(cx, garageBtnY, garageBtnW, garageBtnH, 0x334488)
       .setInteractive({ useHandCursor: true })
       .setStrokeStyle(3, 0x8899cc);
@@ -135,13 +117,13 @@ export class TitleScene extends Phaser.Scene {
     garageBg.on('pointerout', () => garageBg.setFillStyle(0x334488));
     garageBg.on('pointerup', () => this.scene.start('GarageScene'));
 
-    // ── Bucks display ─────────────────────────────────────────────────────
+    // ── Bucks display — top-centre, away from buttons ─────────────────────
     const progress = this.registry.get('progress');
-    this._bucksText = this.add.text(cx, h - SAFE_PADDING - 10, `💵 ${progress ? progress.bucks : 0} Bucks`, {
-      fontSize: '22px',
+    this._bucksText = this.add.text(cx, SAFE_PADDING + 4, `💵 ${progress ? progress.bucks : 0}`, {
+      fontSize: `${Math.min(14, w * 0.018)}px`,
       color: '#ffdd00',
       fontFamily: 'Arial',
-    }).setOrigin(0.5);
+    }).setOrigin(0.5, 0);
 
     // Listen for async IDB recovery — update wallet text if data arrives late
     this.game.events.once('progressRestored', (data) => {
