@@ -113,27 +113,27 @@
 
       // Helper to compute rotated coords for a single {clientX, clientY} point
       function rotatePoint(clientX, clientY) {
-        // Position relative to the top-left of the *physical* screen
-        // In portrait mode the container is rotated 90° clockwise so:
-        //   "portrait" screen dimensions are window.innerWidth (vw) × window.innerHeight (vh)
-        // After the CSS rotate+translate the canvas occupies the full screen in
-        // landscape orientation (vh × vw) as seen by the user.
+        // The CSS transform `translateX(vw) rotate(90deg)` maps canvas point
+        // (cx, cy) to portrait screen point (vw-cy, cx), so the inverse is:
+        //   canvas_x = portrait_y,  canvas_y = vw - portrait_x
         //
-        // The canvas element itself has offsetWidth = vh, offsetHeight = vw
-        // (the swapped dims we assigned), so getBoundingClientRect reports a
-        // portrait-rotated box. We want to remap the raw screen touch point into
-        // the landscape coordinate space Phaser expects.
+        // However, Phaser applies its own BCR-based scaling when it processes
+        // the event coordinates:
+        //   phaser_x = (clientX - rect.left) * canvas.width  / rect.width
+        //   phaser_y = (clientY - rect.top)  * canvas.height / rect.height
         //
-        // Screen (portrait): x ∈ [0, vw], y ∈ [0, vh]
-        // Phaser canvas (after rotate): x ∈ [0, vh], y ∈ [0, vw]
+        // canvas.width=vh, canvas.height=vw (landscape logical size)
+        // rect.width=vw,   rect.height=vh  (portrait visual BCR)
         //
-        // The rotation is: landscape_x = y_screen, landscape_y = vw - x_screen
-        // (because a 90°-CW rotation maps (x,y) → (y, W-x) for width W)
+        // To get phaser_x = portrait_y and phaser_y = vw - portrait_x we must
+        // pre-divide so Phaser's multiply cancels out:
+        //   new_clientX = portrait_y   * vw/vh   → phaser_x = portrait_y   ✓
+        //   new_clientY = (vw-portrait_x) * vh/vw → phaser_y = vw-portrait_x ✓
         const vw = window.innerWidth;
         const vh = window.innerHeight;
 
-        const lx = clientY;
-        const ly = vw - clientX;
+        const lx = clientY * vw / vh;
+        const ly = (vw - clientX) * vh / vw;
 
         return { clientX: lx, clientY: ly };
       }

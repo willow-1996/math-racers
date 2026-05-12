@@ -86,13 +86,16 @@ export class TitleScene extends Phaser.Scene {
     this._drawDecoCar(cx + w * 0.1, cy + h * 0.12, 0xff4444);
 
     // ── RACE! button ──────────────────────────────────────────────────────
-    const btnY = cy + h * 0.3;
-    const btnBg = this.add.rectangle(cx, btnY, 260, 72, 0xff4400)
+    const raceBtnH = Math.max(56, h * 0.15);
+    const raceBtnW = Math.min(280, w * 0.38);
+    const raceFontSize = Math.min(34, raceBtnH * 0.55);
+    const btnY = cy + h * 0.26;
+    const btnBg = this.add.rectangle(cx, btnY, raceBtnW, raceBtnH, 0xff4400)
       .setInteractive({ useHandCursor: true })
       .setStrokeStyle(4, 0xffffff);
 
     const btnText = this.add.text(cx, btnY, '🏁  RACE!', {
-      fontSize: '38px',
+      fontSize: `${raceFontSize}px`,
       fontStyle: 'bold',
       color: '#ffffff',
       fontFamily: 'Arial Black, Arial',
@@ -117,12 +120,15 @@ export class TitleScene extends Phaser.Scene {
     });
 
     // ── GARAGE button ─────────────────────────────────────────────────────
-    const garageBtnY = cy + h * 0.42;
-    const garageBg = this.add.rectangle(cx, garageBtnY, 180, 52, 0x334488)
+    const garageBtnH = Math.max(44, h * 0.12);
+    const garageBtnW = Math.min(200, w * 0.28);
+    const garageFontSize = Math.min(22, garageBtnH * 0.48);
+    const garageBtnY = btnY + raceBtnH / 2 + garageBtnH / 2 + Math.max(8, h * 0.03);
+    const garageBg = this.add.rectangle(cx, garageBtnY, garageBtnW, garageBtnH, 0x334488)
       .setInteractive({ useHandCursor: true })
       .setStrokeStyle(3, 0x8899cc);
     const garageTxt = this.add.text(cx, garageBtnY, '🔧 GARAGE', {
-      fontSize: '24px', fontStyle: 'bold', color: '#ffffff',
+      fontSize: `${garageFontSize}px`, fontStyle: 'bold', color: '#ffffff',
       fontFamily: 'Arial Black, Arial',
     }).setOrigin(0.5);
     garageBg.on('pointerover', () => garageBg.setFillStyle(0x4455aa));
