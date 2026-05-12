@@ -26,7 +26,7 @@ const COOKIE_BASE  = 'mathRacersSave';
 const COOKIE_COUNT = 'mathRacersSave_n';
 const COOKIE_CHUNK = 3500;
 const COOKIE_TTL   = 60 * 60 * 24 * 365; // 1 year in seconds
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 const IDB_NAME     = 'mathRacersDB';
 const IDB_STORE    = 'saves';
 const IDB_KEY      = 'main';
@@ -52,7 +52,7 @@ function defaultSave() {
   }
 
   return {
-    version: SCHEMA_VERSION,
+    version: 3,
     firstRun: true,
     player: {
       name: 'Player 1',
@@ -137,15 +137,25 @@ export class ProgressManager {
         if (!idbData || this._loadedFromSync) return;
 
         // cookies and localStorage were both empty — recover from IDB
-        if (idbData.version !== SCHEMA_VERSION) {
+        if (idbData.version === 4) {
+          // v4 multi-profile envelope
+          this._wrapper = idbData;
+          const profileData = idbData.profiles[idbData.currentProfile];
+          this._ensureKeys(profileData);
+          this.data = profileData;
+        } else if (idbData.version === 3) {
+          this._ensureKeys(idbData);
+          this._wrapper = this._wrapLegacy(idbData);
+          this.data = idbData;
+        } else {
+          // Older save: preserve bucks only
           const fresh = defaultSave();
           if (idbData.player && typeof idbData.player.bucks === 'number') {
             fresh.player.bucks = idbData.player.bucks;
           }
+          fresh.firstRun = false;
+          this._wrapper = this._wrapLegacy(fresh);
           this.data = fresh;
-        } else {
-          this._ensureKeys(idbData);
-          this.data = idbData;
         }
 
         // Re-save to all backends so next load is synchronous
@@ -206,58 +216,86 @@ export class ProgressManager {
 
   // ─── Load / Save ─────────────────────────────────────────────────────────
 
+  /** Wrap a pre-v4 profile save into the v4 multi-profile envelope. */
+  _wrapLegacy(profileData) {
+    const name = (profileData.player && profileData.player.name) || 'Racer';
+    return {
+      version: 4,
+      currentProfile: name,
+      profiles: { [name]: profileData },
+    };
+  }
+
   _load() {
     let raw = null;
-    let source = 'default';
 
     // 1. Try cookies first
     try {
       raw = this._cookieRead();
-      if (raw) source = 'cookies';
     } catch { /* cookies unavailable */ }
 
     // 2. Fall back to localStorage
     if (!raw) {
       try {
         raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) source = 'localStorage';
       } catch { /* unavailable */ }
     }
 
-    if (!raw) return defaultSave();
+    if (!raw) {
+      const fresh = defaultSave();
+      this._wrapper = this._wrapLegacy(fresh);
+      return fresh;
+    }
 
     this._loadedFromSync = true;
 
     try {
       const parsed = JSON.parse(raw);
-      // Migrate from older schema versions
-      if (parsed.version !== SCHEMA_VERSION) {
-        if (parsed.version === 2) {
-          // v2 → v3: add firstRun flag. Existing players skip name entry.
-          parsed.version = SCHEMA_VERSION;
-          parsed.firstRun = false;
-          this._ensureKeys(parsed);
-          return parsed;
-        }
-        // Older than v2: preserve bucks only
+
+      // v4 multi-profile envelope
+      if (parsed.version === 4) {
+        this._wrapper = parsed;
+        const profileData = parsed.profiles[parsed.currentProfile];
+        this._ensureKeys(profileData);
+        return profileData;
+      }
+
+      // Pre-v4: migrate single-profile save
+      let profileData;
+      if (parsed.version === 3) {
+        this._ensureKeys(parsed);
+        profileData = parsed;
+      } else if (parsed.version === 2) {
+        parsed.version = 3;
+        parsed.firstRun = false;
+        this._ensureKeys(parsed);
+        profileData = parsed;
+      } else {
+        // Very old save: preserve bucks only
         const fresh = defaultSave();
         if (parsed.player && typeof parsed.player.bucks === 'number') {
           fresh.player.bucks = parsed.player.bucks;
         }
-        // Existing player — skip name entry
         fresh.firstRun = false;
-        return fresh;
+        profileData = fresh;
       }
-      // Ensure all tracks/classes exist (handles new tracks added after save)
-      this._ensureKeys(parsed);
-      return parsed;
+
+      this._wrapper = this._wrapLegacy(profileData);
+      return profileData;
     } catch {
-      return defaultSave();
+      const fresh = defaultSave();
+      this._wrapper = this._wrapLegacy(fresh);
+      return fresh;
     }
   }
 
   _save() {
-    const json = JSON.stringify(this.data);
+    // Update current profile in wrapper before serialising
+    if (this._wrapper) {
+      this._wrapper.profiles[this._wrapper.currentProfile] = this.data;
+    }
+    const payload = this._wrapper || this.data;
+    const json = JSON.stringify(payload);
 
     // 1. localStorage (sync)
     try { localStorage.setItem(STORAGE_KEY, json); } catch { /* quota/unavailable */ }
@@ -266,7 +304,7 @@ export class ProgressManager {
     try { this._cookieWrite(json); } catch { /* unavailable */ }
 
     // 3. IndexedDB (async)
-    this._idbWrite(this.data).catch(() => { /* unavailable */ });
+    this._idbWrite(payload).catch(() => { /* unavailable */ });
   }
 
   _ensureKeys(data) {
@@ -586,6 +624,76 @@ export class ProgressManager {
     if (idx >= 0) g.equipped.splice(idx, 1);
     else g.equipped.push(attachmentId);
     this._save();
+  }
+
+  // ─── Multi-profile API ───────────────────────────────────────────────────
+
+  /**
+   * Returns an array of { name, bucks, isCurrent } for all profiles.
+   */
+  getProfiles() {
+    if (!this._wrapper) return [];
+    return Object.entries(this._wrapper.profiles).map(([name, profileData]) => ({
+      name,
+      bucks: (profileData.player && typeof profileData.player.bucks === 'number') ? profileData.player.bucks : 0,
+      isCurrent: name === this._wrapper.currentProfile,
+    }));
+  }
+
+  /**
+   * Switch to an existing profile by name.
+   * @param {string} name
+   * @returns {boolean} true
+   */
+  switchProfile(name) {
+    if (!this._wrapper || !this._wrapper.profiles[name]) return false;
+    // Save current profile data into wrapper
+    this._wrapper.profiles[this._wrapper.currentProfile] = this.data;
+    this._wrapper.currentProfile = name;
+    this.data = this._wrapper.profiles[name];
+    this._ensureKeys(this.data);
+    this._save();
+    return true;
+  }
+
+  /**
+   * Create a new profile with a fresh save and switch to it.
+   * @param {string} name  Raw input; trimmed, capped at 16 chars, defaults to 'Racer'
+   * @returns {string} final profile name (may have numeric suffix if already exists)
+   */
+  createProfile(name) {
+    let profileName = (name || '').trim().slice(0, 16) || 'Racer';
+
+    // Ensure uniqueness by appending a number if needed
+    if (this._wrapper && this._wrapper.profiles[profileName]) {
+      let suffix = 2;
+      while (this._wrapper.profiles[`${profileName}${suffix}`]) {
+        suffix++;
+      }
+      profileName = `${profileName}${suffix}`;
+    }
+
+    // Save current profile into wrapper
+    if (this._wrapper) {
+      this._wrapper.profiles[this._wrapper.currentProfile] = this.data;
+    }
+
+    // Create a fresh save for the new profile
+    const fresh = defaultSave();
+    fresh.player.name = profileName;
+    fresh.firstRun = false;
+
+    if (!this._wrapper) {
+      // Should not happen in practice, but guard anyway
+      this._wrapper = this._wrapLegacy(this.data);
+    }
+
+    this._wrapper.profiles[profileName] = fresh;
+    this._wrapper.currentProfile = profileName;
+    this.data = fresh;
+    this._ensureKeys(this.data);
+    this._save();
+    return profileName;
   }
 
   reset() {

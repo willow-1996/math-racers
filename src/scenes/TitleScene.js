@@ -117,6 +117,22 @@ export class TitleScene extends Phaser.Scene {
     garageBg.on('pointerout', () => garageBg.setFillStyle(0x334488));
     garageBg.on('pointerup', () => this.scene.start('GarageScene'));
 
+    // ── Change User button — to the right of GARAGE ───────────────────────
+    const changeBtnW = Math.min(120, w - SAFE_PADDING - (cx + garageBtnW / 2) - 12);
+    if (changeBtnW >= 70) {
+      const changeX = cx + garageBtnW / 2 + 8 + changeBtnW / 2;
+      const changeFontSize = Math.min(14, garageBtnH * 0.38);
+      const changeBg = this.add.rectangle(changeX, garageBtnY, changeBtnW, garageBtnH, 0x226644)
+        .setStrokeStyle(2, 0x44aa66).setInteractive({ useHandCursor: true });
+      this.add.text(changeX, garageBtnY, '👤 Change', {
+        fontSize: `${changeFontSize}px`, fontStyle: 'bold', color: '#ffffff',
+        fontFamily: 'Arial Black, Arial',
+      }).setOrigin(0.5);
+      changeBg.on('pointerover', () => changeBg.setFillStyle(0x338855));
+      changeBg.on('pointerout',  () => changeBg.setFillStyle(0x226644));
+      changeBg.on('pointerup',   () => this.scene.start('UserSelectScene'));
+    }
+
     // ── Bucks display — top-centre, away from buttons ─────────────────────
     const progress = this.registry.get('progress');
     this._bucksText = this.add.text(cx, SAFE_PADDING + 4, `💷 ${progress ? progress.bucks : 0}`, {

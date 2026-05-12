@@ -13,6 +13,11 @@ export class NameEntryScene extends Phaser.Scene {
   constructor() {
     super({ key: 'NameEntryScene' });
     this._input = null;
+    this._addingProfile = false;
+  }
+
+  init(data) {
+    this._addingProfile = !!(data && data.addingProfile);
   }
 
   create() {
@@ -35,7 +40,8 @@ export class NameEntryScene extends Phaser.Scene {
       fontSize: `${Math.min(56, w * 0.07)}px`,
     }).setOrigin(0.5);
 
-    this.add.text(cx, cy - h * 0.16, "What's your name, racer?", {
+    const headingText = this._addingProfile ? 'New racer name?' : "What's your name, racer?";
+    this.add.text(cx, cy - h * 0.16, headingText, {
       fontSize: `${Math.min(32, w * 0.04)}px`,
       fontStyle: 'bold',
       color: '#ffffff',
@@ -65,10 +71,10 @@ export class NameEntryScene extends Phaser.Scene {
       pageCX = window.innerWidth - cy * scaleY;
       pageCY = cx * scaleY;
     } else {
-      const canvas = this.game.canvas;
-      const rect   = canvas.getBoundingClientRect();
-      pageCX = rect.left + rect.width  * 0.5;
-      pageCY = rect.top  + rect.height * 0.42; // slightly above center
+      // In landscape, position relative to the visual viewport directly.
+      // Avoids BCR unreliability across DPR values and browser chrome on real devices.
+      pageCX = window.innerWidth  * 0.5;
+      pageCY = window.innerHeight * 0.42;
     }
 
     const input = document.createElement('input');
@@ -162,8 +168,10 @@ export class NameEntryScene extends Phaser.Scene {
   _submit() {
     const raw = this._input ? this._input.value : '';
     const progress = this.registry.get('progress');
-    if (progress) {
-      progress.setPlayerName(raw);
+    if (this._addingProfile) {
+      if (progress) progress.createProfile(raw);
+    } else {
+      if (progress) progress.setPlayerName(raw);
     }
     this._removeInput();
     this.cameras.main.flash(300, 255, 255, 255);
