@@ -51,31 +51,8 @@ export class NameEntryScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // ── HTML input overlay ────────────────────────────────────────────────
-    // Detect portrait mode — the game container is CSS-rotated 90° clockwise
-    // when innerWidth < innerHeight. The input must be counter-rotated and
-    // repositioned to appear visually centered on the rotated canvas.
-    const isPortrait = window.innerWidth < window.innerHeight;
-
     const inputW = Math.min(360, w * 0.6);
     const inputH = Math.max(56, h * 0.1);
-
-    // Canvas center in CSS-pixel page coordinates.
-    // In portrait: the game container is rotated 90° CW, so the visual
-    // center of the canvas maps to a different point in page space.
-    let pageCX, pageCY;
-    if (isPortrait) {
-      // With transform `translateX(vw) rotate(90deg)`, canvas (cx,cy) maps to
-      // portrait page coordinates: pageX = vw - cy, pageY = cx (when no scaling).
-      const scaleX = window.innerHeight / w; // canvas landscape-width → portrait-height
-      const scaleY = window.innerWidth  / h; // canvas landscape-height → portrait-width
-      pageCX = window.innerWidth - cy * scaleY;
-      pageCY = cx * scaleY;
-    } else {
-      // In landscape, position relative to the visual viewport directly.
-      // Avoids BCR unreliability across DPR values and browser chrome on real devices.
-      pageCX = window.innerWidth  * 0.5;
-      pageCY = window.innerHeight * 0.42;
-    }
 
     const input = document.createElement('input');
     input.type = 'text';
@@ -88,12 +65,8 @@ export class NameEntryScene extends Phaser.Scene {
 
     Object.assign(input.style, {
       position:        'fixed',
-      left:            `${pageCX - inputW / 2}px`,
-      top:             `${pageCY - inputH / 2}px`,
       width:           `${inputW}px`,
       height:          `${inputH}px`,
-      // Counter-rotate so text appears upright on rotated canvas
-      transform:       isPortrait ? 'rotate(-90deg)' : 'none',
       transformOrigin: 'center center',
       fontSize:        `${Math.min(28, inputH * 0.5)}px`,
       fontFamily:      'Arial Black, Arial, sans-serif',
@@ -108,6 +81,31 @@ export class NameEntryScene extends Phaser.Scene {
       boxSizing:       'border-box',
       zIndex:          '1000',
     });
+
+    // Repositions and re-rotates the input whenever orientation changes.
+    const repositionInput = () => {
+      const portrait = window.innerWidth < window.innerHeight;
+      let pageCX, pageCY;
+      if (portrait) {
+        // Canvas (cx,cy) maps to portrait page via `translateX(vw) rotate(90deg)`:
+        //   pageX = vw - cy,  pageY = cx   (no DPR scaling needed here)
+        const scaleY = window.innerWidth / h;
+        pageCX = window.innerWidth - cy * scaleY;
+        pageCY = cx * scaleY;
+        input.style.transform = 'rotate(90deg)';
+      } else {
+        pageCX = window.innerWidth  * 0.5;
+        pageCY = window.innerHeight * 0.42;
+        input.style.transform = 'none';
+      }
+      input.style.left = `${pageCX - inputW / 2}px`;
+      input.style.top  = `${pageCY - inputH / 2}px`;
+    };
+
+    repositionInput();
+    this._repositionInput = repositionInput;
+    window.addEventListener('resize',            repositionInput);
+    window.addEventListener('orientationchange', repositionInput);
 
     document.body.appendChild(input);
     this._input = input;
@@ -156,6 +154,8 @@ export class NameEntryScene extends Phaser.Scene {
     // ── Remove input on scene shutdown ────────────────────────────────────
     this.events.on('shutdown', () => this._removeInput());
     this.events.on('destroy',  () => this._removeInput());
+    this.events.on('shutdown', () => this._removeResizeListeners());
+    this.events.on('destroy',  () => this._removeResizeListeners());
   }
 
   _removeInput() {
@@ -163,6 +163,14 @@ export class NameEntryScene extends Phaser.Scene {
       this._input.parentNode.removeChild(this._input);
     }
     this._input = null;
+  }
+
+  _removeResizeListeners() {
+    if (this._repositionInput) {
+      window.removeEventListener('resize',            this._repositionInput);
+      window.removeEventListener('orientationchange', this._repositionInput);
+      this._repositionInput = null;
+    }
   }
 
   _submit() {
