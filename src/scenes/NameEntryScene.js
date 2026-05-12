@@ -58,15 +58,11 @@ export class NameEntryScene extends Phaser.Scene {
     // center of the canvas maps to a different point in page space.
     let pageCX, pageCY;
     if (isPortrait) {
-      // Container is rotated 90° CW around its own center.
-      // Container dimensions in page space: width=innerWidth, height=innerHeight.
-      // Visual canvas center (cx, cy) in canvas space maps to page space as:
-      //   pageX = containerLeft + containerHeight - cy * (containerHeight / h)
-      //   pageY = containerTop  + cx * (containerWidth / w)
-      // Simplified for full-screen (containerLeft=0, containerTop=0):
-      const scaleX = window.innerHeight / w; // canvas w fills the rotated container height
-      const scaleY = window.innerWidth  / h;
-      pageCX = window.innerHeight - cy * scaleX;
+      // With transform `translateX(vw) rotate(90deg)`, canvas (cx,cy) maps to
+      // portrait page coordinates: pageX = vw - cy, pageY = cx (when no scaling).
+      const scaleX = window.innerHeight / w; // canvas landscape-width → portrait-height
+      const scaleY = window.innerWidth  / h; // canvas landscape-height → portrait-width
+      pageCX = window.innerWidth - cy * scaleY;
       pageCY = cx * scaleY;
     } else {
       const canvas = this.game.canvas;

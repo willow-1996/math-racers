@@ -68,14 +68,12 @@
 
       if (isPortrait) {
         // Rotate 90° clockwise: the game canvas will appear landscape.
-        // Container must be sized as vh × vw (swapped) then translated so it
-        // stays on-screen after rotation around its top-left corner.
-        //
-        //  transform: rotate(90deg) applied at top-left origin shifts the box
-        //  so we translate it right by vh to keep it in view.
+        // Container sized vh × vw (swapped landscape dims), then:
+        //   translateX(vw) rotate(90deg) maps canvas corners exactly to portrait viewport.
+        // Proof: canvas (cx,cy) → portrait (vw-cy, cx) which covers [0..vw] × [0..vh].
         container.style.width  = vh + 'px';   // becomes the landscape width
         container.style.height = vw + 'px';   // becomes the landscape height
-        container.style.transform = `rotate(90deg) translateY(-${vh}px)`;
+        container.style.transform = `translateX(${vw}px) rotate(90deg)`;
         container.style.transformOrigin = '0 0';
       } else {
         container.style.width  = vw + 'px';
@@ -84,10 +82,14 @@
         container.style.transformOrigin = '0 0';
       }
 
-      // Tell Phaser about the real (possibly rotated) dimensions by firing a
-      // resize — Phaser.Scale.RESIZE picks up window.innerWidth/Height via the
-      // canvas parent's clientWidth/clientHeight.
-      window.dispatchEvent(new Event('resize'));
+      // Tell Phaser the landscape canvas dimensions directly.
+      // We use Phaser.Scale.NONE so Phaser never auto-reads getBoundingClientRect()
+      // (which would return the rotated/portrait size and create the wrong canvas).
+      const lw = isPortrait ? vh : vw;
+      const lh = isPortrait ? vw : vh;
+      if (globalThis.__phaserGame) {
+        globalThis.__phaserGame.scale.resize(lw, lh);
+      }
     }
 
     // ── Input coordinate rotation ─────────────────────────────────────────────

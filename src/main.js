@@ -13,15 +13,23 @@ import { ProgressManager } from './systems/ProgressManager.js';
 // Instantiate global progress manager and share via Phaser registry
 const progress = new ProgressManager();
 
+// Always initialise Phaser with landscape dimensions.
+// The #game-container is CSS-rotated 90° when the device is in portrait so the
+// canvas's logical (landscape) size must be set explicitly — Phaser uses
+// getBoundingClientRect() on its parent which returns the rotated (portrait)
+// size and would create the canvas at the wrong dimensions.
+const _isPortrait = window.innerHeight > window.innerWidth;
+const _gameW = _isPortrait ? window.innerHeight : window.innerWidth;
+const _gameH = _isPortrait ? window.innerWidth  : window.innerHeight;
+
 const config = {
   type: Phaser.AUTO,
   backgroundColor: '#1a1a2e',
   parent: 'game-container',
   scale: {
-    mode: Phaser.Scale.RESIZE,
-    autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: '100%',
-    height: '100%',
+    mode: Phaser.Scale.NONE,
+    width: _gameW,
+    height: _gameH,
   },
   scene: [BootScene, NameEntryScene, TitleScene, ClassSelectScene, TrackSelectScene, RaceScene, ResultsScene, GarageScene, CheatScene],
   callbacks: {
